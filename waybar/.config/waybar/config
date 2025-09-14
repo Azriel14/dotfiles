@@ -1,0 +1,60 @@
+{
+  "position": "top",
+  "height": 40,
+  "modules-left": ["sway/workspaces"],
+  "modules-right": ["network", "pulseaudio", "battery", "disk", "custom/date", "custom/layout", "clock", "tray", "custom/power"],
+  "sway/workspaces": {
+    "disable-scroll": true,
+    "format": "{icon}",
+  },
+  "custom/power": {
+    "format": "󰐥",
+    "on-click": "/home/weebus/.config/rofi/scripts/powermenu_t1",
+
+  },
+  "clock": {
+    "format": "󰅐 {:%a %d-%m-%Y %H:%M}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+  },
+  "battery": {
+    "states": {
+      "warning": 30,
+      "critical": 15,
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󰂄{capacity}%",
+    "format-alt": "{time} {icon}",
+    "format-full": "󱈑 {capacity}%",
+    "format-icons": ["󱊡", "󱊢", "󱊣"]
+  },
+  "network": {
+    "format-ethernet": "↑ {bandwidthUpOctets} ↓ {bandwidthDownOctets}",
+    "format-linked": "{ifname} (No IP) ",
+    "format-disconnected": "󰤮 Disconnected",
+  },
+
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": "󰖁 Muted",
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", "", ""]
+    },
+    "on-click": "pavucontrol"
+  },
+  "tray": {
+    "icon-size": 15,
+    "spacing": 5
+  },
+  "disk": {
+    "interval": 5,
+    "format": "  {percentage_used:2}%",
+    "path": "/"
+  },
+}
