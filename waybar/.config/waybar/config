@@ -8,7 +8,7 @@
     "return-type": "json",
     "exec": "$HOME/.config/waybar/check-vpn-status.sh",
     "on-click": "$HOME/.config/waybar/toggle-vpn.sh",
-    "on-click-right": "kitty -e $HOME/.config/waybar/select.sh",
+    "on-click-right": "$HOME/.config/waybar/select-rofi.sh",
     "signal": 8
   },
   "custom/power": {

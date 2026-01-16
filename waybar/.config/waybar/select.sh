@@ -77,17 +77,17 @@ fi
 # Validate selection
 if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#configs[@]}" ]; then
     selected_vpn="${configs[$((choice-1))]}"
-    
+
     # Update vpn.conf
     echo "VPN_NAME=\"$selected_vpn\"" > "$VPN_CONF"
     echo "VPN configuration updated to $selected_vpn"
-    
+
     # If a VPN is currently connected, disconnect it
     if [ -n "$current_vpn" ] && ip link show | grep -q "$current_vpn" 2>/dev/null; then
         echo "Disconnecting from $current_vpn..."
         sudo wg-quick down "$current_vpn"
     fi
-    
+
     # Connect to the new VPN
     echo "Connecting to $selected_vpn..."
     if sudo wg-quick up "$selected_vpn"; then
@@ -95,7 +95,7 @@ if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#con
     else
         echo "Failed to connect to $selected_vpn"
     fi
-    
+
     read -p "Press Enter to continue..."
 else
     echo "Invalid selection."

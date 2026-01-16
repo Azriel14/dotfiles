@@ -1,51 +1,33 @@
 #!/bin/bash
 
-# Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VPN_CONF="$SCRIPT_DIR/vpn.conf"
 
-# Create vpn.conf if it doesn't exist
-if [ ! -f "$VPN_CONF" ]; then
-    echo "VPN_NAME=\"\"" > "$VPN_CONF"
-    # Try to auto-configure with first available VPN
-    configs_path="/etc/wireguard"
-    if [ -d "$configs_path" ]; then
-        first_config=$(sudo find "$configs_path" -maxdepth 1 -name "*.conf" -type f 2>/dev/null | head -n1 | xargs -r basename -s .conf)
-        if [ -n "$first_config" ]; then
-            echo "VPN_NAME=\"$first_config\"" > "$VPN_CONF"
-        fi
-    fi
-fi
+[ -f "$VPN_CONF" ] && source "$VPN_CONF"
 
-# Source the config
-source "$VPN_CONF"
-
-# Check if VPN_NAME is set
 if [ -z "$VPN_NAME" ]; then
-    notify-send "VPN Error" "No VPN configuration found. Right-click to select one."
+    notify-send "VPN Error" "No VPN selected. Right-click to choose one."
     exit 1
 fi
 
-# Toggle VPN
-if ip link show | grep -q "$VPN_NAME" 2>/dev/null; then
-    # VPN is connected, disconnect it
-    if timeout 2 env SUDO_ASKPASS=/bin/false sudo -A -n wg-quick down "$VPN_NAME" 2>/dev/null; then
-        notify-send "VPN Disconnected" "Disconnected from $VPN_NAME"
-    elif timeout 2 sudo -n wg-quick down "$VPN_NAME" 2>/dev/null; then
-        notify-send "VPN Disconnected" "Disconnected from $VPN_NAME"
-    else
-        notify-send "VPN Error" "Failed to disconnect from $VPN_NAME"
-    fi
+# Check if the specifically configured VPN is the one that's up
+if ip link show "$VPN_NAME" &>/dev/null; then
+    # It's currently active, so we turn it OFF
+    sudo wg-quick down "$VPN_NAME"
+    notify-send "VPN" "Disconnected from $VPN_NAME"
 else
-    # VPN is disconnected, connect it
-    if timeout 2 env SUDO_ASKPASS=/bin/false sudo -A -n wg-quick up "$VPN_NAME" 2>/dev/null; then
-        notify-send "VPN Connected" "Connected to $VPN_NAME"
-    elif timeout 2 sudo -n wg-quick up "$VPN_NAME" 2>/dev/null; then
-        notify-send "VPN Connected" "Connected to $VPN_NAME"
+    # It's not active. First, kill any other rogue VPNs that might be up
+    active_ifaces=$(ip -brief link show type wireguard | awk '{print $1}')
+    for iface in $active_ifaces; do
+        sudo wg-quick down "$iface" 2>/dev/null
+    done
+
+    # Now turn ON the preferred VPN
+    if sudo wg-quick up "$VPN_NAME"; then
+        notify-send "VPN" "Connected to $VPN_NAME"
     else
         notify-send "VPN Error" "Failed to connect to $VPN_NAME"
     fi
 fi
 
-# Force waybar to update
 pkill -RTMIN+8 waybar 2>/dev/null || true
