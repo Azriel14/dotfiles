@@ -1,0 +1,47 @@
+# Tokyo Night Storm theme for Mako
+
+# Default notification style
+background-color=#24283b
+text-color=#c0caf5
+border-color=#7aa2f7
+border-size=2
+border-radius=10
+
+# Padding and margins
+padding=15
+margin=10
+
+# Font
+font=monospace 11
+
+# Icon settings
+icon-path=/usr/share/icons/Papirus-Dark
+max-icon-size=48
+
+# Positioning
+anchor=top-right
+width=350
+height=150
+
+# Timeout
+default-timeout=5000
+
+# Grouping
+group-by=app-name
+
+# Urgency levels
+[urgency=low]
+background-color=#1a1b26
+border-color=#565f89
+default-timeout=3000
+
+[urgency=normal]
+background-color=#24283b
+border-color=#7aa2f7
+default-timeout=3000
+
+[urgency=critical]
+background-color=#24283b
+border-color=#f7768e
+text-color=#f7768e
+default-timeout=0

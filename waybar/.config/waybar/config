@@ -1,39 +1,29 @@
 {
   "position": "top",
   "height": 40,
-  "modules-left": ["sway/workspaces"],
-  "modules-right": ["network", "pulseaudio", "battery", "disk", "custom/date", "custom/layout", "clock", "tray", "custom/power"],
-  "sway/workspaces": {
-    "disable-scroll": true,
-    "format": "{icon}",
+  "modules-right": ["custom/vpn", "network", "pulseaudio", "disk", "custom/date", "custom/layout", "clock", "tray", "custom/power"],
+  "custom/vpn": {
+    "format": "{}",
+    "interval": 3,
+    "return-type": "json",
+    "exec": "$HOME/.config/waybar/check-vpn-status.sh",
+    "on-click": "$HOME/.config/waybar/toggle-vpn.sh",
+    "on-click-right": "kitty -e $HOME/.config/waybar/select.sh",
+    "signal": 8
   },
   "custom/power": {
     "format": "󰐥",
     "on-click": "/home/weebus/.config/rofi/scripts/powermenu_t1",
-
   },
   "clock": {
     "format": "󰅐 {:%a %d-%m-%Y %H:%M}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-  },
-  "battery": {
-    "states": {
-      "warning": 30,
-      "critical": 15,
-    },
-    "format": "{icon} {capacity}%",
-    "format-charging": "󰂄 {capacity}%",
-    "format-plugged": "󰂄{capacity}%",
-    "format-alt": "{time} {icon}",
-    "format-full": "󱈑 {capacity}%",
-    "format-icons": ["󱊡", "󱊢", "󱊣"]
   },
   "network": {
     "format-ethernet": "↑ {bandwidthUpOctets} ↓ {bandwidthDownOctets}",
     "format-linked": "{ifname} (No IP) ",
     "format-disconnected": "󰤮 Disconnected",
   },
-
   "pulseaudio": {
     "format": "{icon}  {volume}%",
     "format-muted": "󰖁 Muted",
