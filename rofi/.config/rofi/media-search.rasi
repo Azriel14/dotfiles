@@ -1,0 +1,83 @@
+/**
+ * Minimal search bar for media-search.sh
+ * Tokyo Night colours to match waybar
+ **/
+
+* {
+    font:             "FiraCode Nerd Font 12";
+    background:       #1f2335;
+    foreground:       #c0caf5;
+    accent:           #7aa2f7;
+    selected-bg:      #24283b;
+    placeholder:      #565f89;
+    dim:              #414868;
+}
+
+window {
+    width:            480px;
+    padding:          0px;
+    border-radius:    8px;
+    background-color: @background;
+    border:           2px solid;
+    border-color:     @accent;
+    location:         center;
+    anchor:           center;
+}
+
+mainbox {
+    background-color: transparent;
+    children:         [ "inputbar", "listview" ];
+    spacing:          0px;
+}
+
+inputbar {
+    spacing:          10px;
+    padding:          12px 16px;
+    background-color: transparent;
+    text-color:       @foreground;
+    children:         [ "prompt", "entry" ];
+    border:           0px 0px 1px 0px;
+    border-color:     @dim;
+}
+
+prompt {
+    enabled:          true;
+    padding:          0px 4px 0px 0px;
+    background-color: transparent;
+    text-color:       @accent;
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @foreground;
+    cursor:           text;
+    placeholder:      "search or pick saved...";
+    placeholder-color: @placeholder;
+}
+
+listview {
+    enabled:          true;
+    lines:            4;
+    padding:          6px 0px;
+    background-color: transparent;
+    scrollbar:        false;
+    fixed-height:     false;
+}
+
+element {
+    padding:          8px 16px;
+    background-color: transparent;
+    text-color:       @foreground;
+    border-radius:    4px;
+}
+
+element selected {
+    background-color: @selected-bg;
+    text-color:       @accent;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+}

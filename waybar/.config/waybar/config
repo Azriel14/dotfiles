@@ -1,7 +1,7 @@
 {
   "position": "top",
   "height": 40,
-  "modules-right": ["custom/vpn", "network", "pulseaudio", "disk", "custom/date", "custom/layout", "clock", "tray", "custom/power"],
+  "modules-right": ["custom/vpn", "custom/animedoro", "custom/media-prev", "custom/media-play", "custom/media-title", "custom/media-next", "custom/media-mode", "network", "pulseaudio", "disk", "custom/date", "custom/layout", "clock", "tray", "custom/power"],
   "custom/vpn": {
     "format": "{}",
     "interval": 3,
@@ -41,6 +41,57 @@
   "tray": {
     "icon-size": 15,
     "spacing": 5
+  },
+  "custom/media-prev": {
+    "format": "{}",
+    "interval": 1,
+    "return-type": "json",
+    "exec": "$HOME/.config/waybar/media.sh icon-prev",
+    "on-click": "$HOME/.config/waybar/media.sh prev",
+    "signal": 10
+  },
+  "custom/media-play": {
+    "format": "{}",
+    "interval": 1,
+    "return-type": "json",
+    "exec": "$HOME/.config/waybar/media.sh icon-play",
+    "on-click": "$HOME/.config/waybar/media.sh play-pause",
+    "signal": 10
+  },
+  "custom/media-title": {
+    "format": "{}",
+    "interval": 1,
+    "return-type": "json",
+    "exec": "$HOME/.config/waybar/media.sh title",
+    "on-click": "$HOME/.config/waybar/media.sh click-title",
+    "on-click-right": "$HOME/.config/waybar/media.sh stop",
+    "signal": 10,
+    "escape": true
+  },
+  "custom/media-mode": {
+    "format": "{}",
+    "interval": 1,
+    "return-type": "json",
+    "exec": "$HOME/.config/waybar/media.sh icon-mode",
+    "on-click": "$HOME/.config/waybar/media.sh cycle-mode",
+    "signal": 10
+  },
+  "custom/media-next": {
+    "format": "{}",
+    "interval": 1,
+    "return-type": "json",
+    "exec": "$HOME/.config/waybar/media.sh icon-next",
+    "on-click": "$HOME/.config/waybar/media.sh next",
+    "signal": 10
+  },
+  "custom/animedoro": {
+    "format": "{}",
+    "interval": 1,
+    "return-type": "json",
+    "exec": "$HOME/.config/waybar/animedoro.sh status",
+    "on-click": "$HOME/.config/waybar/animedoro.sh click-left",
+    "on-click-right": "$HOME/.config/waybar/animedoro.sh click-right",
+    "signal": 9
   },
   "disk": {
     "interval": 5,
