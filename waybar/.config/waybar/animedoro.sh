@@ -1,20 +1,15 @@
 #!/bin/bash
 
-# ── Settings ───────────────────────────────────────────────────────────────────
-WORK_MIN=45   # earliest you can take a break (minutes)
-WORK_MAX=60   # when the overtime notification fires (minutes)
+WORK_MIN=45
+WORK_MAX=60
 
-# ── Messages ───────────────────────────────────────────────────────────────────
-# Notifications
 MSG_START="Hmph. Finally. Don't you dare slack off."
-MSG_TOO_EARLY="%d more minutes, idiot. You haven't earned anything yet."   # %d = minutes remaining
+MSG_TOO_EARLY="%d more minutes, idiot. You haven't earned anything yet."
 MSG_BREAK="...Fine. You did okay. Go watch your stupid show."
 MSG_OVERTIME="BAKA! I told you to stop working! Take your break RIGHT NOW!!"
 
-# Bar tooltip (idle only)
 TIP_IDLE="Click to start  ·  Right click to reset"
 
-# ── Internals ─────────────────────────────────────────────────────────────────
 STATE_FILE="/tmp/animedoro_state"
 OT_FILE="/tmp/animedoro_overtime"
 
