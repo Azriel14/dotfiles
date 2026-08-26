@@ -3,11 +3,6 @@
 WORK_MIN=45
 WORK_MAX=60
 
-MSG_START="Hmph. Finally. Don't you dare slack off."
-MSG_TOO_EARLY="%d more minutes, idiot. You haven't earned anything yet."
-MSG_BREAK="...Fine. You did okay. Go watch your stupid show."
-MSG_OVERTIME="BAKA! I told you to stop working! Take your break RIGHT NOW!!"
-
 TIP_IDLE="Click to start  ·  Right click to reset"
 
 STATE_FILE="/tmp/animedoro_state"
@@ -25,17 +20,14 @@ case "$1" in
         case "$phase" in
             idle)
                 save_state "work" "$now"
-                notify-send "Animedoro" "$MSG_START" -t 3000 -u low
                 ;;
             work)
                 elapsed_min=$(( (now - $(get_start)) / 60 ))
                 if [ "$elapsed_min" -lt "$WORK_MIN" ]; then
                     left=$(( WORK_MIN - elapsed_min ))
-                    notify-send "Animedoro" "$(printf "$MSG_TOO_EARLY" "$left")" -t 3000 -u low
                 else
                     save_state "break" "$now"
                     rm -f "$OT_FILE"
-                    notify-send "Animedoro" "$MSG_BREAK" -t 5000
                 fi
                 ;;
             break)
@@ -71,7 +63,6 @@ case "$1" in
                     class="work-ready" icon="󰔛"
                 else
                     if [ ! -f "$OT_FILE" ]; then
-                        notify-send "Animedoro" "$MSG_OVERTIME" -t 0 -u critical
                         touch "$OT_FILE"
                     fi
                     class="work-over" icon="󱎫"
