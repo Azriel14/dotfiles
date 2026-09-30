@@ -7,6 +7,15 @@ hl.monitor({
     position = "0x0",
     scale = "1",
     bitdepth = 10,
+    cm="srgb",
+    vrr = 1,
+})
+
+hl.monitor({
+    output = "HDMI-A-1",
+    mode = "1920x1080@60",
+    position = "3440x0",
+    scale = "1"
 })
 
 -- ═══════════════════════════════════════════
@@ -249,9 +258,8 @@ hl.config({
         follow_mouse = 1,
         sensitivity = 0,
         touchpad = {
-            natural_scroll = false,
-        },
-    },
+            natural_scroll = false,}
+    }
 })
 
 -- ═══════════════════════════════════════════
@@ -260,7 +268,7 @@ hl.config({
 hl.on("hyprland.start", function()
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")  
     hl.exec_cmd("waybar")
-    hl.exec_cmd("mpvpaper -o \"no-audio --loop-playlist\" '*' /home/weebus/Pictures/Background/va11.mp4")
+    hl.exec_cmd("mpvpaper -o \"no-audio --loop-playlist\" DP-2 /home/weebus/Pictures/Background/va11.mp4")
     hl.exec_cmd("wl-paste --type text --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
     hl.exec_cmd("swayosd-server")
