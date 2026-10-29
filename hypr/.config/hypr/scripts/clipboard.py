@@ -10,14 +10,16 @@ import gi
 gi.require_version("Gdk", "3.0")
 gi.require_version("Gtk", "3.0")
 gi.require_version("GtkLayerShell", "0.1")
-from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, GtkLayerShell, Pango
+from gi.repository import Gdk, Gtk, GtkLayerShell, Pango
 
 THUMBS = os.path.join(os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")), "cliphist", "thumbs")
 LOCK = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "clipboard-picker.lock")
 IMAGE = re.compile(r"^\[\[ binary data (.+) ([a-z]+) (\d+)x(\d+) \]\]$")
 WIDTH = 400
-THUMB_W = 276
+THUMB_W = 336
 THUMB_H = 180
+THUMB_MIN_H = 48
+THUMB_RADIUS = 8
 
 CSS = b"""
 * {
@@ -104,19 +106,25 @@ def thumbnail(id_, match):
     path = os.path.join(THUMBS, f"{id_}-{match[3]}x{match[4]}-{match[1].replace(' ', '')}-{THUMB_W}x{THUMB_H}.png")
     if os.path.exists(path):
         return path
+    w, h = int(match[3]), int(match[4])
+    height = max(round(h * min(THUMB_W / w, THUMB_H / h, 1)), THUMB_MIN_H)
+    size = f"{THUMB_W}x{height}"
     data = subprocess.run(["cliphist", "decode", id_], capture_output=True).stdout
-    try:
-        loader = GdkPixbuf.PixbufLoader()
-        loader.write(data)
-        loader.close()
-    except GLib.Error:
-        return None
-    pixbuf = loader.get_pixbuf()
-    w, h = pixbuf.get_width(), pixbuf.get_height()
-    scale = min(THUMB_W / w, THUMB_H / h, 1)
-    pixbuf = pixbuf.scale_simple(max(1, round(w * scale)), max(1, round(h * scale)), GdkPixbuf.InterpType.BILINEAR)
-    pixbuf.savev(path, "png", [], [])
-    return path
+    result = subprocess.run(
+        [
+            "magick", "-", "-auto-orient",
+            "(", "-clone", "0", "-background", "#15161E", "-alpha", "remove", "-resize", f"{size}^", "-gravity", "center", "-extent", size,
+            "-blur", "0x10", "-fill", "#15161E", "-colorize", "40%", ")",
+            "(", "-clone", "0", "-resize", f"{size}>", ")",
+            "-delete", "0", "-gravity", "center", "-compose", "over", "-composite", "-alpha", "set",
+            "(", "-size", size, "xc:none", "-fill", "white",
+            "-draw", f"roundrectangle 0,0 {THUMB_W - 1},{height - 1} {THUMB_RADIUS},{THUMB_RADIUS}", ")",
+            "-compose", "DstIn", "-composite", f"png:{path}",
+        ],
+        input=data,
+        capture_output=True,
+    )
+    return path if result.returncode == 0 and os.path.exists(path) else None
 
 
 class Picker(Gtk.Window):
@@ -157,6 +165,8 @@ class Picker(Gtk.Window):
             max_content_height=560,
         )
         self.scroll.set_overlay_scrolling(False)
+        self.scroll.connect("scroll-event", self.on_scroll)
+        self.anim = None
         self.scroll.add(self.list)
         self.main.pack_start(self.scroll, True, True, 0)
 
@@ -166,19 +176,16 @@ class Picker(Gtk.Window):
         for id_, preview in entries():
             row = Gtk.ListBoxRow()
             row.id = id_
-            row.text = f"{id_} {preview}".lower()
+            row.text = preview.lower()
             row.thumb = None
-            box = Gtk.Box(spacing=16)
-            box.pack_start(Gtk.Label(label=id_, xalign=0, width_chars=4, valign=Gtk.Align.START), False, False, 0)
             match = IMAGE.match(preview)
             path = thumbnail(id_, match) if match else None
             if path:
                 row.thumb = path
                 keep.add(os.path.basename(path))
-                box.pack_start(Gtk.Image(file=path, halign=Gtk.Align.START), False, False, 0)
+                row.add(Gtk.Image(file=path, halign=Gtk.Align.CENTER))
             else:
-                box.pack_start(Gtk.Label(label=preview, xalign=0, ellipsize=Pango.EllipsizeMode.END, hexpand=True), True, True, 0)
-            row.add(box)
+                row.add(Gtk.Label(label=preview, xalign=0, ellipsize=Pango.EllipsizeMode.END))
             self.list.add(row)
             self.rows.append(row)
         for name in os.listdir(THUMBS):
@@ -190,7 +197,7 @@ class Picker(Gtk.Window):
         self.connect("destroy", Gtk.main_quit)
         self.show_all()
         self.search.grab_focus()
-        self.select(self.visible()[:1])
+        self.select(next(iter(self.rows), None))
 
     def matches(self, row):
         return all(word in row.text for word in self.search.get_text().lower().split())
@@ -198,18 +205,57 @@ class Picker(Gtk.Window):
     def visible(self):
         return [row for row in self.rows if self.matches(row)]
 
-    def select(self, rows):
-        if not rows:
+    def select(self, row):
+        if row:
+            self.list.select_row(row)
+        else:
             self.list.unselect_all()
-            return
-        row = rows[0]
-        self.list.select_row(row)
+
+    def reveal(self, row):
         alloc = row.get_allocation()
+        page = self.scroll.get_vadjustment().get_page_size()
+        base = self.target()
+        if alloc.y < base:
+            self.scroll_to(alloc.y)
+        elif alloc.y + alloc.height > base + page:
+            self.scroll_to(alloc.y + alloc.height - page)
+
+    def target(self):
+        return self.anim[1] if self.anim else self.scroll.get_vadjustment().get_value()
+
+    def scroll_to(self, value):
         adj = self.scroll.get_vadjustment()
-        if alloc.y < adj.get_value():
-            adj.set_value(alloc.y)
-        elif alloc.y + alloc.height > adj.get_value() + adj.get_page_size():
-            adj.set_value(alloc.y + alloc.height - adj.get_page_size())
+        value = max(adj.get_lower(), min(value, adj.get_upper() - adj.get_page_size()))
+        clock = self.scroll.get_frame_clock()
+        if not clock:
+            adj.set_value(value)
+            return
+        if not self.anim:
+            self.scroll.add_tick_callback(self.tick)
+        self.anim = (adj.get_value(), value, clock.get_frame_time())
+
+    def tick(self, _, clock):
+        if not self.anim:
+            return False
+        start, end, began = self.anim
+        t = min((clock.get_frame_time() - began) / 180000, 1)
+        self.scroll.get_vadjustment().set_value(start + (end - start) * (1 - (1 - t) ** 3))
+        if t < 1:
+            return True
+        self.anim = None
+        return False
+
+    def on_scroll(self, _, event):
+        device = event.get_source_device()
+        if device and device.get_source() == Gdk.InputSource.TOUCHPAD:
+            return False
+        ok, _, dy = event.get_scroll_deltas()
+        if not ok:
+            dy = {Gdk.ScrollDirection.UP: -1, Gdk.ScrollDirection.DOWN: 1}.get(event.direction, 0)
+        if not dy:
+            return False
+        self.scroll_to(self.target() + dy * self.scroll.get_vadjustment().get_page_size() ** (2 / 3))
+        return True
 
     def move(self, step):
         rows = self.visible()
@@ -217,13 +263,16 @@ class Picker(Gtk.Window):
             return
         current = self.list.get_selected_row()
         index = rows.index(current) if current in rows else -1
-        self.select([rows[(index + step) % len(rows)]])
+        row = rows[(index + step) % len(rows)]
+        self.select(row)
+        self.reveal(row)
 
     def on_search(self, _):
         self.placeholder.set_visible(not self.search.get_text())
         self.list.invalidate_filter()
+        self.anim = None
         self.scroll.get_vadjustment().set_value(0)
-        self.select(self.visible()[:1])
+        self.select(next(iter(self.visible()), None))
 
     def on_key(self, _, event):
         key = event.keyval
@@ -275,11 +324,15 @@ class Picker(Gtk.Window):
         if not self.rows:
             self.destroy()
             return
-        self.select(rows[min(index, len(rows) - 1):][:1])
+        self.select(rows[min(index, len(rows) - 1)] if rows else None)
 
     def wipe(self):
-        if subprocess.run(["cliphist", "wipe"]).returncode:
+        config = subprocess.run(["cliphist", "version"], capture_output=True, text=True).stderr
+        db = dict(line.split("\t", 1) for line in config.splitlines() if "\t" in line).get("db-path")
+        if not db:
             return
+        if os.path.exists(db):
+            os.remove(db)
         for name in os.listdir(THUMBS):
             os.remove(os.path.join(THUMBS, name))
         self.destroy()
