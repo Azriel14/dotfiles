@@ -7,7 +7,6 @@ hl.monitor({
     position = "0x0",
     scale = "1",
     bitdepth = 10,
-    cm="srgb",
     vrr = 1,
 })
 
@@ -30,11 +29,10 @@ local menu = "/home/weebus/.config/rofi/scripts/launcher_t2"
 -- ═══════════════════════════════════════════
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
-hl.env("ecosystem:no_update_news", "true")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
-hl.env("QT_STYLE_OVERRIDE", "qt6ct")
 hl.env("WLR_DRM_NO_MODIFIERS", "1")
 hl.env("GTK_THEME", "TokyoNight")
+hl.env("I_WANT_A_BROKEN_WAYLAND_UI", "1")
 
 -- ═══════════════════════════════════════════
 -- BEZIER CURVES
@@ -111,13 +109,6 @@ hl.animation({
     bezier = "md3_decel",
     style = "slidefadevert 15%",
 })
-hl.animation({
-    leaf = "specialWorkspace",
-    enabled = true,
-    speed = 3,
-    bezier = "md3_decel",
-    style = "slidevert",
-})
 
 -- ═══════════════════════════════════════════
 -- KEYBINDS
@@ -133,7 +124,7 @@ hl.bind(mainMod .. " + 1", hl.dsp.exec_cmd("librewolf"))
 hl.bind(mainMod .. " + 2", hl.dsp.exec_cmd("flatpak run dev.vencord.Vesktop"))
 hl.bind(mainMod .. " + 3", hl.dsp.exec_cmd("steam"))
 hl.bind(mainMod .. " + 4", hl.dsp.exec_cmd("obsidian"))
-hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("cliphist list | /home/weebus/.config/rofi/scripts/launcher_t1 -dmenu | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("/home/weebus/.config/hypr/scripts/clipboard.py"))
 
 hl.bind("SUPER + O", hl.dsp.window.tag({ tag = "opaque" }))
 
@@ -259,6 +250,9 @@ hl.config({
         sensitivity = 0,
         touchpad = {
             natural_scroll = false,}
+    },
+    ecosystem = {
+        no_update_news = true,
     }
 })
 
